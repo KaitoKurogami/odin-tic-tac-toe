@@ -188,7 +188,7 @@ const gameDirector = (function() {
             return
         }else if (board.isFull()){
             gameState.gameEnded = true
-            gameState.gameVictory = true
+            gameState.gameVictory = false
             return
         }
         nextTurn();
@@ -223,7 +223,7 @@ do {
     }while(!gameState.isValidTurn())
 }while(!gameState.isGameEnded())
 
-if (gameState.isGameVictory){
+if (gameState.isGameVictory()){
     console.log(`congrats, player ${gameState.getCurrentPlayer().getName()}`);
 }else {
     console.log("it's a draw")
