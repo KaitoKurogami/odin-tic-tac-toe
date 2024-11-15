@@ -202,29 +202,32 @@ const gameDirector = (function() {
 })();
 
 
-let pl1 = playerFactory.createPlayer(prompt("insert name player 1"), "X");
-console.log(pl1.getName())
-let pl2 = playerFactory.createPlayer(prompt("insert name player 2"), "O");
-console.log(pl2.getName())
+//let pl1 = playerFactory.createPlayer(prompt("insert name player 1"), "X");
+//let pl2 = playerFactory.createPlayer(prompt("insert name player 2"), "O");
+
+let pl1 = playerFactory.createPlayer("player 1", "X");
+let pl2 = playerFactory.createPlayer("player 2", "X");
 
 gameDirector.setBoard(gameboard)
 gameDirector.addPlayer(pl1)
 gameDirector.addPlayer(pl2)
-gameState=gameDirector.startGame()
-console.log("game start")
-let position;
-do {
-    do{
-        position = parseInt(prompt("enter position (0-8)"))
-        gameDirector.processTurn(position)
-        if (!gameState.isValidTurn()){
-            console.log("invalid position")
-        }
-    }while(!gameState.isValidTurn())
-}while(!gameState.isGameEnded())
+function game(){
+    gameState=gameDirector.startGame()
+    console.log("game start")
+    let position;
+    do {
+        do{
+            position = parseInt(prompt("enter position (0-8)"))
+            gameDirector.processTurn(position)
+            if (!gameState.isValidTurn()){
+                console.log("invalid position")
+            }
+        }while(!gameState.isValidTurn())
+    }while(!gameState.isGameEnded())
 
-if (gameState.isGameVictory()){
-    console.log(`congrats, player ${gameState.getCurrentPlayer().getName()}`);
-}else {
-    console.log("it's a draw")
+    if (gameState.isGameVictory()){
+        console.log(`congrats, player ${gameState.getCurrentPlayer().getName()}`);
+    }else {
+        console.log("it's a draw")
+    }
 }
