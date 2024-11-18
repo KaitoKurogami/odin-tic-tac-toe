@@ -124,6 +124,11 @@ const gameDirector = (function() {
         players.push(player);
     }
 
+    const removePlayers = () => {
+        players.length = 0;
+    }
+
+
     const setBoard = (gameBoard) => {
         board = gameBoard;
     }
@@ -143,7 +148,7 @@ const gameDirector = (function() {
         gameState.validGame = true
         board.resetBoard();
         turns = 0;
-        return {isValidGame, getCurrentPlayer, isValidTurn, isGameEnded, isGameVictory};
+        return {isValidGame, getCurrentPlayer, isValidTurn, isGameEnded, isGameVictory, isPlayer1Turn};
     }
 
     const nextTurn = () => {
@@ -194,23 +199,130 @@ const gameDirector = (function() {
         nextTurn();
     }
 
+    const isPlayer1Turn = () => {
+        return turns%2 === 0
+    }
+
     const getTurns = () => {
         return turns
     }
 
-    return {addPlayer, setBoard, startGame, processTurn, getTurns}
+    return {addPlayer, removePlayers, setBoard, startGame, processTurn, getTurns}
 })();
 
 
-//let pl1 = playerFactory.createPlayer(prompt("insert name player 1"), "X");
-//let pl2 = playerFactory.createPlayer(prompt("insert name player 2"), "O");
+const renderer = (function(){
 
-let pl1 = playerFactory.createPlayer("player 1", "X");
-let pl2 = playerFactory.createPlayer("player 2", "X");
+    let gameState;
+    let gameDirector;
+
+
+    const setGameDirector = (newGameDirector) => {
+        gameDirector = newGameDirector;
+    }
+
+    const player1Input = document.querySelector("#player1");
+    const player2Input = document.querySelector("#player2");
+    const startButton = document.querySelector("#start");
+    const board = document.querySelector(".board");
+    const currentPlayerLabel = document.querySelector(".currentPlayer")
+    let gameStarted = false;
+
+    function isPlayersNameValid(){
+        return (player1Input.value !== "") && (player2Input.value !== "")
+    }
+
+    function cleanBoard(){
+        Array.from(board.children).forEach((child) => {
+            child.classList.remove("player-1")
+            child.classList.remove("player-2")
+            child.textContent = ""
+        })
+    }
+
+    function startGame(){
+        if(!isPlayersNameValid()){
+            alert("insert both player names");
+        }else{
+            if (!gameStarted){
+                bindBoard()
+            }else{
+                cleanBoard()
+            }
+            startButton.textContent = "Restart";
+            gameStarted = true;
+            gameDirector.removePlayers();
+            let pl1 = playerFactory.createPlayer(player1Input.value, "X");
+            gameDirector.addPlayer(pl1);
+            let pl2 = playerFactory.createPlayer(player2Input.value, "O");
+            gameDirector.addPlayer(pl2);
+            board.classList.add("gameStarted");
+            currentPlayerLabel.textContent=`Current player: ${pl1.getName()}`
+            gameState = gameDirector.startGame();
+        }
+    }
+
+    function bindStartButton() {
+        startButton.addEventListener("click", e => {
+            startGame()
+        })
+    }
+
+
+    function bindBoard() {
+        Array.from(board.children).forEach((child,index) => {
+            child.addEventListener("click", () =>{
+                if(gameState.isGameEnded()){
+                    if(gameState.isGameVictory()){
+                        alert(`The game already ended\nThe winner is: ${gameState.getCurrentPlayer().getName()}`)
+                    }else{
+                        alert("The game already ended in a draw")
+                    }
+                    return
+                }
+                let currentMark = gameState.getCurrentPlayer().getMark()
+                let player1Turn = gameState.isPlayer1Turn()
+                gameDirector.processTurn(index)
+                if(!gameState.isValidTurn()){
+                    alert("invalid position")
+                }else{
+                    child.textContent=currentMark
+                        currentPlayerLabel.textContent=`Current player: ${gameState.getCurrentPlayer().getName()}`
+                    if(player1Turn){
+                        child.classList.add("player-1")
+                    }else{
+                        child.classList.add("player-2")
+                    }
+                }
+                if(gameState.isGameEnded()){
+                    let string;
+                    if(gameState.isGameVictory()){
+                        string = `The winner is: ${gameState.getCurrentPlayer().getName()}`
+                    }else{
+                        string = "The game ended in a draw"
+                    }
+                    currentPlayerLabel.textContent=string
+                    setTimeout(function(){
+                        alert(string)
+                    },50)
+                }
+            })
+        })
+    }
+
+    const bindButtons = () => {
+        bindStartButton();
+    }
+
+    bindButtons();
+
+    return{setGameDirector}
+})();
 
 gameDirector.setBoard(gameboard)
-gameDirector.addPlayer(pl1)
-gameDirector.addPlayer(pl2)
+
+renderer.setGameDirector(gameDirector)
+
 function game(){
     gameState=gameDirector.startGame()
     console.log("game start")
